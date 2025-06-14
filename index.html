@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Lokasi GPS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+        
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .coordinates {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+        }
+        
+        .coord-item {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .coord-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .coord-value {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            min-width: 150px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #dee2e6;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin: 10px 0;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            border-color: #667eea;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .map-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .map-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📍</div>
+        <h1>Capture Lokasi GPS</h1>
+        <p class="subtitle">Klik tombol untuk mengambil koordinat lokasi Anda</p>
+        
+        <div id="status" class="status hidden"></div>
+        
+        <div id="coordinates" class="coordinates hidden">
+            <div class="coord-item">
+                <span class="coord-label">Latitude:</span>
+                <span id="lat" class="coord-value">-</span>
+            </div>
+            <div class="coord-item">
+                <span class="coord-label">Longitude:</span>
+                <span id="lng" class="coord-value">-</span>
+            </div>
+            <div class="coord-item">
+                <span class="coord-label">Akurasi:</span>
+                <span id="accuracy" class="coord-value">-</span>
+            </div>
+            <div class="coord-item">
+                <span class="coord-label">Waktu:</span>
+                <span id="timestamp" class="coord-value">-</span>
+            </div>
+        </div>
+        
+        <div id="form-section" class="hidden">
+            <input type="text" id="nama" class="form-input" placeholder="Nama Anda (optional)">
+            <input type="text" id="keterangan" class="form-input" placeholder="Keterangan (optional)">
+        </div>
+        
+        <button id="getLocationBtn" class="btn" onclick="getLocation()">
+            <span id="btnText">Ambil Lokasi GPS</span>
+        </button>
+        
+        <button id="saveBtn" class="btn hidden" onclick="saveData()">
+            Simpan Data
+        </button>
+        
+        <button id="copyBtn" class="btn-secondary btn hidden" onclick="copyCoordinates()">
+            Copy Koordinat
+        </button>
+        
+        <div id="map-link" class="hidden" style="margin-top: 20px;">
+            <a id="googleMaps" href="#" target="_blank" class="map-link">📍 Lihat di Google Maps</a>
+        </div>
+    </div>
+
+    <script>
+        let currentLocation = null;
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.classList.remove('hidden');
+        }
+        
+        function hideStatus() {
+            document.getElementById('status').classList.add('hidden');
+        }
+        
+        function getLocation() {
+            if (!navigator.geolocation) {
+                showStatus('Geolocation tidak didukung oleh browser ini', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('getLocationBtn');
+            const btnText = document.getElementById('btnText');
+            
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>Mengambil lokasi...';
+            showStatus('Sedang mengambil lokasi GPS...', 'loading');
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        timestamp: new Date().toLocaleString('id-ID')
+                    };
+                    
+                    displayLocation(currentLocation);
+                    showStatus('Lokasi berhasil diambil!', 'success');
+                    
+                    btn.disabled = false;
+                    btnText.textContent = 'Ambil Ulang Lokasi';
+                    
+                    // Show form and buttons
+                    document.getElementById('form-section').classList.remove('hidden');
+                    document.getElementById('saveBtn').classList.remove('hidden');
+                    document.getElementById('copyBtn').classList.remove('hidden');
+                    document.getElementById('map-link').classList.remove('hidden');
+                },
+                (error) => {
+                    let errorMessage = 'Gagal mengambil lokasi: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += 'Akses lokasi ditolak';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += 'Informasi lokasi tidak tersedia';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += 'Timeout dalam mengambil lokasi';
+                            break;
+                        default:
+                            errorMessage += 'Error tidak diketahui';
+                            break;
+                    }
+                    
+                    showStatus(errorMessage, 'error');
+                    btn.disabled = false;
+                    btnText.textContent = 'Coba Lagi';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+        
+        function displayLocation(location) {
+            document.getElementById('lat').textContent = location.latitude.toFixed(6);
+            document.getElementById('lng').textContent = location.longitude.toFixed(6);
+            document.getElementById('accuracy').textContent = `±${Math.round(location.accuracy)} meter`;
+            document.getElementById('timestamp').textContent = location.timestamp;
+            document.getElementById('coordinates').classList.remove('hidden');
+            
+            // Update Google Maps link
+            const mapsUrl = `https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
+            document.getElementById('googleMaps').href = mapsUrl;
+        }
+        
+        function copyCoordinates() {
+            if (!currentLocation) return;
+            
+            const coordText = `${currentLocation.latitude}, ${currentLocation.longitude}`;
+            navigator.clipboard.writeText(coordText).then(() => {
+                showStatus('Koordinat berhasil disalin!', 'success');
+                setTimeout(hideStatus, 2000);
+            }).catch(() => {
+                showStatus('Gagal menyalin koordinat', 'error');
+            });
+        }
+        
+        function saveData() {
+            if (!currentLocation) {
+                showStatus('Tidak ada data lokasi untuk disimpan', 'error');
+                return;
+            }
+            
+            const nama = document.getElementById('nama').value;
+            const keterangan = document.getElementById('keterangan').value;
+            
+            const data = {
+                latitude: currentLocation.latitude,
+                longitude: currentLocation.longitude,
+                accuracy: currentLocation.accuracy,
+                timestamp: currentLocation.timestamp,
+                nama: nama,
+                keterangan: keterangan
+            };
+            
+            // Simulate saving to Google Sheets
+            // In real implementation, you would send this to Google Apps Script
+            console.log('Data yang akan disimpan:', data);
+            
+            showStatus('Data berhasil disimpan! (Simulasi)', 'success');
+            
+            // You can add actual Google Sheets integration here
+            // Example: send data to Google Apps Script web app
+            /*
+            fetch('YOUR_GOOGLE_APPS_SCRIPT_URL', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            */
+        }
+        
+        // Auto-request permission on page load
+        window.addEventListener('load', () => {
+            if (navigator.geolocation) {
+                // Check if permission is already granted
+                navigator.permissions.query({name: 'geolocation'}).then((result) => {
+                    if (result.state === 'granted') {
+                        showStatus('Siap mengambil lokasi GPS', 'success');
+                    } else if (result.state === 'prompt') {
+                        showStatus('Klik tombol untuk mengambil lokasi', 'loading');
+                    } else {
+                        showStatus('Akses lokasi diperlukan untuk menggunakan fitur ini', 'error');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
