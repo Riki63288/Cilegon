@@ -31,4 +31,375 @@
             width: 100%;
             backdrop-filter: blur(10px);
         }
-        ...
+        
+        .title {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+        }
+        
+        .status-card.success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+        }
+        
+        .status-card.error {
+            background: linear-gradient(45deg, #dc3545, #fd7e14);
+            box-shadow: 0 10px 25px rgba(220, 53, 69, 0.3);
+        }
+        
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .status-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .coordinates {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+            display: none;
+        }
+        
+        .coord-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .coord-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .coord-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 16px;
+        }
+        
+        .coord-value {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: #212529;
+            font-size: 14px;
+            border: 1px solid #dee2e6;
+            min-width: 140px;
+            text-align: center;
+        }
+        
+        .auto-redirect-info {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .redirect-timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+            margin: 10px 0;
+        }
+        
+        .manual-redirect {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .manual-redirect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .error-actions {
+            margin-top: 20px;
+        }
+        
+        .retry-btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        .retry-btn:hover {
+            background: #218838;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">📍 GPS Tracker</h1>
+        <p class="subtitle">Mengambil koordinat lokasi Anda secara otomatis</p>
+        
+        <div id="statusCard" class="status-card">
+            <div class="status-icon">🔄</div>
+            <div class="loading-spinner"></div>
+            <div class="status-text">Sedang mengambil lokasi GPS...</div>
+            <div class="status-desc">Mohon izinkan akses lokasi pada browser Anda</div>
+        </div>
+        
+        <div id="coordinates" class="coordinates">
+            <div class="coord-row">
+                <span class="coord-label">📍 Latitude:</span>
+                <span id="latValue" class="coord-value">-</span>
+            </div>
+            <div class="coord-row">
+                <span class="coord-label">📍 Longitude:</span>
+                <span id="lngValue" class="coord-value">-</span>
+            </div>
+        </div>
+        
+        <div id="autoRedirectInfo" class="auto-redirect-info">
+            <div style="color: #1976d2; font-weight: bold; margin-bottom: 10px;">
+                ✅ Koordinat berhasil didapatkan!
+            </div>
+            <div style="color: #666;">
+                Otomatis mengarahkan ke form dalam: 
+                <div id="redirectTimer" class="redirect-timer">5</div>
+                detik
+            </div>
+        </div>
+        
+        <button id="manualRedirect" class="manual-redirect">
+            📝 Buka Form Sekarang
+        </button>
+        
+        <div class="footer">
+            Powered by HTML5 Geolocation API
+        </div>
+    </div>
+
+    <script>
+        // URL Google Form kamu - SUDAH DISET!
+        const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd_BRnszuItR0bX2QoSnCFaPiSysKmNMCdxjXyVhS0bzQyWFg/viewform';
+        
+        // Entry IDs untuk pre-fill (nanti kita cari tau entry ID-nya)
+        const LATITUDE_ENTRY = 'entry.XXXXXXXX';  // Ganti dengan entry ID latitude
+        const LONGITUDE_ENTRY = 'entry.XXXXXXXX'; // Ganti dengan entry ID longitude
+        
+        let currentLat = null;
+        let currentLng = null;
+        let redirectTimer = null;
+        
+        function updateStatus(type, icon, title, desc) {
+            const statusCard = document.getElementById('statusCard');
+            const statusIcon = statusCard.querySelector('.status-icon');
+            const statusText = statusCard.querySelector('.status-text');
+            const statusDesc = statusCard.querySelector('.status-desc');
+            const spinner = statusCard.querySelector('.loading-spinner');
+            
+            statusCard.className = `status-card ${type}`;
+            statusIcon.textContent = icon;
+            statusText.textContent = title;
+            statusDesc.textContent = desc;
+            
+            if (type !== 'loading') {
+                if (spinner) spinner.style.display = 'none';
+            }
+        }
+        
+        function showCoordinates(lat, lng) {
+            document.getElementById('latValue').textContent = lat.toFixed(6);
+            document.getElementById('lngValue').textContent = lng.toFixed(6);
+            document.getElementById('coordinates').style.display = 'block';
+        }
+        
+        function startAutoRedirect() {
+            document.getElementById('autoRedirectInfo').style.display = 'block';
+            document.getElementById('manualRedirect').style.display = 'inline-block';
+            
+            let countdown = 5;
+            const timerElement = document.getElementById('redirectTimer');
+            
+            redirectTimer = setInterval(() => {
+                countdown--;
+                timerElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(redirectTimer);
+                    redirectToForm();
+                }
+            }, 1000);
+        }
+        
+        function redirectToForm() {
+            if (!currentLat || !currentLng) {
+                alert('Koordinat belum tersedia!');
+                return;
+            }
+            
+            // Method 1: Pre-fill dengan entry IDs (jika sudah tau entry ID-nya)
+            // const prefillUrl = `${GOOGLE_FORM_URL}?${LATITUDE_ENTRY}=${currentLat}&${LONGITUDE_ENTRY}=${currentLng}`;
+            
+            // Method 2: Redirect ke form biasa, user copy manual (sementara)
+            // Simpan koordinat di localStorage untuk diambil di form
+            localStorage.setItem('gps_latitude', currentLat);
+            localStorage.setItem('gps_longitude', currentLng);
+            
+            // Method 3: Buka form di tab baru dengan alert koordinat
+            const coordinates = `Latitude: ${currentLat.toFixed(6)}\nLongitude: ${currentLng.toFixed(6)}`;
+            
+            // Copy ke clipboard (jika browser support)
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(`${currentLat.toFixed(6)}, ${currentLng.toFixed(6)}`);
+            }
+            
+            alert(`Koordinat GPS berhasil disalin!\n\n${coordinates}\n\nSilakan paste di form yang akan terbuka.`);
+            
+            // Buka Google Form
+            window.open(GOOGLE_FORM_URL, '_blank');
+        }
+        
+        function getLocation() {
+            if (!navigator.geolocation) {
+                updateStatus('error', '❌', 'Browser tidak mendukung GPS', 'Silakan gunakan browser yang mendukung HTML5 Geolocation');
+                return;
+            }
+            
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 60000
+            };
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    currentLat = position.coords.latitude;
+                    currentLng = position.coords.longitude;
+                    
+                    updateStatus('success', '✅', 'Lokasi GPS berhasil didapatkan!', 'Siap mengarahkan ke form penitipan depo');
+                    showCoordinates(currentLat, currentLng);
+                    startAutoRedirect();
+                },
+                function(error) {
+                    let errorMsg = '';
+                    let errorDesc = '';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Akses lokasi ditolak';
+                            errorDesc = 'Silakan refresh halaman dan izinkan akses lokasi';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Lokasi tidak tersedia';
+                            errorDesc = 'Pastikan GPS aktif dan Anda berada di area dengan sinyal yang baik';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Timeout mengambil lokasi';
+                            errorDesc = 'Koneksi terlalu lambat, silakan coba lagi';
+                            break;
+                        default:
+                            errorMsg = 'Terjadi kesalahan';
+                            errorDesc = 'Silakan refresh halaman dan coba lagi';
+                            break;
+                    }
+                    
+                    updateStatus('error', '❌', errorMsg, errorDesc);
+                    showErrorActions();
+                },
+                options
+            );
+        }
+        
+        function showErrorActions() {
+            const statusCard = document.getElementById('statusCard');
+            const errorActions = document.createElement('div');
+            errorActions.className = 'error-actions';
+            errorActions.innerHTML = `
+                <button class="retry-btn" onclick="location.reload()">🔄 Refresh Halaman</button>
+                <button class="retry-btn" onclick="getLocation()">📍 Coba Lagi</button>
+            `;
+            statusCard.appendChild(errorActions);
+        }
+        
+        // Event listeners
+        document.getElementById('manualRedirect').addEventListener('click', function() {
+            if (redirectTimer) {
+                clearInterval(redirectTimer);
+            }
+            redirectToForm();
+        });
+        
+        // Auto start GPS detection
+        window.addEventListener('DOMContentLoaded', function() {
+            getLocation();
+        });
+        
+        // Prevent page unload saat auto-redirect countdown
+        window.addEventListener('beforeunload', function() {
+            if (redirectTimer) {
+                clearInterval(redirectTimer);
+            }
+        });
+    </script>
+</body>
+</html>
